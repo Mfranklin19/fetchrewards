@@ -8,7 +8,7 @@ If you do not already have Go installed on your machine, head to [the Go website
 
 ### **Download Postman**
 
-This is a headless program, so we will be interacting with it using third party software. You can use any tool you like to do so, but I prefer Postman. you can [download Postman here](https://www.postman.com/downloads/) if you choose to do the same!
+This is a headless program, so we will be interacting with it using third party software. You can use any tool you like to do so, but I prefer Postman. You can [download Postman here](https://www.postman.com/downloads/) if you choose to do the same!
 
 ## **Run the Project**
 
