@@ -23,12 +23,6 @@ func getTransactionById(transactionId int) *Transaction {
 	return nil
 }
 
-func removeTransaction(transactionId int) {
-	transactionMap.Lock()
-	defer transactionMap.Unlock()
-	delete(transactionMap.m, transactionId)
-}
-
 func getTransactionList() []Transaction {
 	transactionMap.RLock()
 	transactions := make([]Transaction, 0, len(transactionMap.m))

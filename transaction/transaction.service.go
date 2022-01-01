@@ -80,31 +80,6 @@ func transactionHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(transactionJson)
-	case http.MethodPut:
-		var updatedTransaction Transaction
-		bodyBytes, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		err = json.Unmarshal(bodyBytes, &updatedTransaction)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		if updatedTransaction.TransactionId != transactionId {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		_, err = addOrUpdateTransaction(updatedTransaction)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		return
-	case http.MethodDelete:
-		removeTransaction(transactionId)
 	case http.MethodOptions:
 		return
 	default:
