@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"sort"
 	"sync"
+
+	"fetchrewards.com/points/balance"
+	"fetchrewards.com/points/payer"
 )
 
 var transactionMap = struct {
@@ -60,7 +63,6 @@ func getNextTransactionId() int {
 
 func addOrUpdateTransaction(transaction Transaction) (int, error) {
 	addOrUpdateId := -1
-
 	if transaction.TransactionId > 0 {
 		oldTransaction := getTransactionById(transaction.TransactionId)
 		if oldTransaction == nil {
@@ -71,6 +73,8 @@ func addOrUpdateTransaction(transaction Transaction) (int, error) {
 		addOrUpdateId = getNextTransactionId()
 		transaction.TransactionId = addOrUpdateId
 	}
+	payer.AddOrUpdatePayer(transaction.Payer, transaction.Points)
+	balance.AddBalance(transaction.TransactionId, transaction.Payer, transaction.Points, transaction.Timestamp)
 	transactionMap.Lock()
 	transactionMap.m[transaction.TransactionId] = transaction
 	transactionMap.Unlock()

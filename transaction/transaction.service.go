@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"fetchrewards.com/points/cors.go"
+	"fetchrewards.com/points/cors"
 )
 
 const apiTransactionsPath = "transactions"

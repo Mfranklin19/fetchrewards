@@ -1,59 +1,79 @@
 package balance
 
 import (
-	"fmt"
 	"sort"
 	"sync"
+	"time"
 )
 
-var payerMap = struct {
+var balanceMap = struct {
 	sync.RWMutex
-	m map[int]Payer
-}{m: make(map[int]Payer)}
+	m map[int]Balance
+}{m: make(map[int]Balance)}
 
-func getPayerById(payerId int) *Payer {
-	payerMap.RLock()
-	defer payerMap.RUnlock()
-	if transaction, ok := payerMap.m[payerId]; ok {
-		return &transaction
-	}
-	return nil
+func PaymentPossble(points int) bool {
+	return points <= getTotalBalance()
 }
 
-func getPayerIds() []int {
-	payerMap.RLock()
-	payerIds := []int{}
-	for key := range payerMap.m {
-		payerIds = append(payerIds, key)
-	}
-	payerMap.RUnlock()
-	sort.Ints(payerIds)
-	return payerIds
-}
-
-func getNextPayerId() int {
-	payerIds := getPayerIds()
-	if len(payerIds) == 0 {
-		return 1
-	}
-	return payerIds[len(payerIds)-1] + 1
-}
-
-func addOrUpdatePayer(payer Payer) (int, error) {
-	addOrUpdateId := -1
-
-	if payer.PayerId > 0 {
-		oldTransaction := getPayerById(payer.PayerId)
-		if oldTransaction == nil {
-			return 0, fmt.Errorf("transaction id [%d] does not exist", payer.PayerId)
+func MakePayment(points int) (int,error) {
+	balances := getBalancesByDate()
+	var balance Balance
+	for points > 0 {
+		balance, balances = balances[0], balances[1:]
+		if balance.Points > points {
+			balance.Points -= points
+			updateBalance(balance)
+		} else {
+			removeBalance(balance)
 		}
-		addOrUpdateId = payer.PayerId
-	} else {
-		addOrUpdateId = getNextPayerId()
-		payer.PayerId = addOrUpdateId
+		points -= balance.Points
 	}
-	payerMap.Lock()
-	payerMap.m[payer.PayerId] = payer
-	payerMap.Unlock()
-	return addOrUpdateId, nil
+	return getTotalBalance(), nil
+}
+
+func getTotalBalance() int {
+	balanceMap.RLock()
+	balancePoints := 0
+	for balanceId := range balanceMap.m {
+		balancePoints += balanceMap.m[balanceId].Points
+	}
+	balanceMap.RUnlock()
+	return balancePoints
+}
+
+func getBalancesByDate() []Balance {
+	balanceMap.RLock()
+	balances := make([]Balance, 0, len(balanceMap.m))
+	for _, value := range balanceMap.m {
+		balances = append(balances, value)
+	}
+	balanceMap.RUnlock()
+	sort.Slice(balances, func(i, j int) bool {
+		return balances[i].Timestamp.Before(balances[j].Timestamp)
+	})
+	return balances
+}
+
+func updateBalance(balance Balance) {	
+	balanceMap.Lock()
+	balanceMap.m[balance.BalanceId] = balance
+	balanceMap.Unlock()
+}
+
+func removeBalance(balance Balance) {
+	balanceMap.Lock()
+	delete(balanceMap.m, balance.BalanceId)
+	balanceMap.Unlock()
+}
+
+func AddBalance(balanceId int, payer string, points int, Timestamp time.Time) {
+	balance := &Balance {
+		BalanceId: balanceId,
+		Payer: payer,
+		Points: points,
+		Timestamp: Timestamp,
+	}
+	balanceMap.Lock()
+	balanceMap.m[balance.BalanceId] = *balance
+	balanceMap.Unlock()
 }

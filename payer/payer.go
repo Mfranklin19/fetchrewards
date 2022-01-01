@@ -1,7 +1,6 @@
-package balance
+package payer
 
 type Payer struct {
-	PayerId   int
 	PayerName string
 	Points    int
 }
