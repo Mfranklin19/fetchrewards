@@ -34,12 +34,8 @@ func expenseHandler(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		balance, err := balance.MakePayment(expense.Amount)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		balanceJSON, err := json.Marshal(balance)
+		report := balance.MakePayment(expense.Amount)
+		balanceJSON, err := json.Marshal(report)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
